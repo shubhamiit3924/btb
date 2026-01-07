@@ -123,20 +123,7 @@ Fairness constraints were applied to ensure realistic execution paths.
 
 ---
 
-## 📂 Repository Structure
 
-
-
-├── btb.v
-├── btb_tb.v
-├── fsm_diagram/
-├── nusmv/
-│ └── btb_model.smv
-├── waveforms/
-└── README.md
-
-
----
 
 ## 📈 Key Takeaways
 

@@ -1,0 +1,39 @@
+MODULE main
+VAR
+    state: {idle, lookup, update};
+    pc : 0..3;  -- Simplified PC
+    branch_in_btb : boolean;
+    
+ASSIGN
+    init(state) := idle;
+    init(pc) := 0;
+    init(branch_in_btb) := FALSE;
+    
+    next(state) := case
+        state = idle : lookup;
+        state = lookup & branch_in_btb : idle;  -- Hit: prediction available
+        state = lookup & !branch_in_btb : update; -- Miss: need to update
+        state = update : idle;
+    esac;
+    
+    next(pc) := (pc + 1) mod 4;
+    
+    next(branch_in_btb) := case
+        state = update : TRUE;  -- After update, branch is in BTB
+        TRUE : branch_in_btb;
+    esac;
+
+-- Critical fairness: eventually we encounter branches not in BTB
+FAIRNESS !branch_in_btb
+
+-- Main property: Every branch miss eventually leads to BTB update
+CTLSPEC NAME "branch_eventually_updates" := 
+    AG ((state = lookup & !branch_in_btb) -> AF (state = update))
+
+-- All states are reachable
+CTLSPEC NAME "all_states_reachable" := 
+    EF (state = idle) & EF (state = lookup) & EF (state = update)
+
+-- Proper state transitions
+LTLSPEC NAME "valid_transitions" := 
+    G ((state = update) -> (X state = idle))
